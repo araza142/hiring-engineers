@@ -9,22 +9,24 @@ alirazaonsite@gmail.com
 ![Ubuntu_VM_AWS](images/Level0_1.png)
 
 ### Level 1 - Collecting your Data
-* Sign up and install local agent
+* Sign up and install local agent  
+
 Signed up for DataDog:  
 ![DataDog_SignedUp](images/Level1_1a.png)
 
 Locate remote agent:
 ![DataDog_RemoteAgent_Setup](images/Level1_1b.png)
 
-- Install remote agent:
+Install remote agent:  
 To install agent run following commands:
 ```bash
 DD_API_KEY=xxx-xxx bash -c "$(curl -L https://raw.githubusercontent.com/DataDog/dd-agent/master/packaging/datadog-agent/source/install_agent.sh)"
 ```
 Where DD_API_KEY is the unique key we retrieved from DataDog portal.  
-Ensure it is running:  
+
+Ensure DataDog agent is running:  
 ![DataDog_RemoteAgent_Status](images/Level1_1c.png)  
-Alternatively, you can start, stop and check the status of datadog agent by running:  
+Alternatively, we can start, stop and check the status of Datadog agent by running:  
 ```bash
 service datadog-agent start | stop | status
 ```
@@ -34,13 +36,13 @@ In this context, agent is a piece of software which collects data generated from
 
 * Add tags in the Agent config file and show us a screenshot of your host and its tags on the Host Map page in Datadog.  
 
-For this step first we renamed our client host to **dd-client01**  
+First, we renamed our host to **dd-client01**  
 
-(Optionally) We learned that renaming the hostname will not instantly change the hostname in the datadog UI, to update the name in datadog we followed <a href="https://help.datadoghq.com/hc/en-us/articles/203764655-How-can-I-change-the-hostname-">Link</a>
+(Optionally) We learned that renaming the hostname will not instantly change the hostname in the Datadog UI, to update the name in Datadog we followed <a href="https://help.datadoghq.com/hc/en-us/articles/203764655-How-can-I-change-the-hostname-" target="_blank">Link</a>
 The hostname key was set to **auto-detected** which means eventually it would have detected the changed name.  
 ![DataDog_RemoteAgent_Setup](images/Level1_3a.png)
 
-After renaming host we can continue to see the original hostname in the datadog UI for the next 24 hours, however, this will be removed once the data ages out. Not to worry! DataDog is not billing for two instances, only for the connected one!  
+After renaming host we can continue to see the original hostname in the Datadog UI for the next 24 hours, however, this will be removed once the data ages out. Not to worry! DataDog is not billing for two instances, only for the connected one!  
 ![DataDog_RemoteAgent_Setup](images/Level1_3b.png)
 
 Assume **dd-client01** is a development machine and will be running few applications such as MySQL
@@ -65,7 +67,54 @@ root@dd-client01:~# service datadog-agent status
 ```
 
 Show tags are associated with host:  
-![DataDog_RemoteAgent_Setup](images/Level1_3c.png)
+![DataDog_RemoteAgent_Setup](images/Level1_3c.png)  
+
+* Install a database on your machine (MongoDB, MySQL, or PostgreSQL) and then install the respective Datadog integration for that database.  
+
+Lets install MySQL database. For reference my recommended guide is: <a href="https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-16-04" target="_blank">MySQL Installation Guide</a>  
+MySQL database installed:  
+![MySQL_Database_Installed](images/Level1_4a.png)  
+
+Now configure the Datadog integration for MySQL database:  
+Locate the integration:
+![MySQL_Database_Installed](images/Level1_4b.png)  
+
+Click available and then install.
+A new window will open, click the configuration tab for installation instructions:
+![MySQL_Database_Installed](images/Level1_4c.png)  
+
+Follow the instructions to enable the Datadog integration for MySQL database. A summary of instructions is:
+Create a user mysql for DataDog and grant some rights so that it can collect metrics.
+Configure the DataDog agent to connect to MySQL
+Restart the Datadog agent
+Execute the info command and verify that the integration check has passed.  
+```bash
+root@dd-client01:~# /etc/init.d/datadog-agent info
+```  
+(The screenshot shows the MySQL integration is working with DataDog agent)  
+![MySQL_Database_Installed](images/Level1_4d.png)  
+
+* Write a custom Agent check that samples a random value. Call this new metric: `test.support.random`  
+Custom check code:
+```bash
+root@dd-client01:~# cat /etc/dd-agent/checks.d/random.py
+import random
+
+from checks import AgentCheck
+class HelloCheck(AgentCheck):
+    def check(self, instance):
+	r = random.random()
+        self.gauge('test.support.random', r)
+```
+```bash
+root@dd-client01:~# cat /etc/dd-agent/conf.d/random.yaml
+init_config:
+
+instances:
+    [{}]
+```  
+Custom check test:  
+![Custom_check_test](images/Level1_5a.png)  
 
 
 
